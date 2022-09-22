@@ -1,4 +1,5 @@
 import React from 'react';
+
 let score = 7;
 
 class Key extends React.Component {
@@ -29,6 +30,7 @@ class Key extends React.Component {
             isClicked: false
         }
 
+        //this.myRef = React.createRef();
         this.pick = this.pick.bind(this);
         this.enter = this.enter.bind(this);
         this.attack = this.attack.bind(this);
@@ -68,48 +70,44 @@ class Key extends React.Component {
     }
 
     render() {
-        const isLabel = this.props.isLabel;
+        //const isLabel = this.props.isLabel;
         let socketio = this.props.socket;
         const isPicked = this.state.isPicked;
-        const current_game = this.state.current_game;
+        //const current_game = this.state.current_game;
         const isEntered = this.state.isEntered;
-        const isMiss = this.state.isMiss;
-        const isOppMiss = this.state.isOppMiss;
-        const isSub = this.state.isSub;
-        const isClose = this.state.isClose;
-        const isClicked = this.state.isClicked;
-        const username = this.state.username;
+        // const username = this.state.username;
 
-        // This is executes when a user picks the location for their ship
-        socketio.removeAllListeners("pick_to_client");
-        socketio.on("pick_to_client", (data) => {
-          let pi = this.state.isPicked;
-          console.log("letter picked: " + data.letter);
-          console.log("is picked " + pi);
-          this.setState({
-            isPicked: true,
-            letterVal: data.letter,
-            correct_answers: [],
-            almost_answers: [],
-            pickedVal: data.position,
-            current_game: data.this_game,
-            username: data.username
-          }) 
-          console.log("changed " + pi);
-        });
+        // // This is executes when a user picks the location for their ship
+        // socketio.removeAllListeners("pick_to_client");
+        // socketio.on("pick_to_client", (data) => {
+        //   let pi = this.state.isPicked;
+        //   console.log("letter picked: " + data.letter);
+        //   console.log("is picked " + pi);
+        //   this.setState({
+        //     isPicked: true,
+        //     letterVal: data.letter,
+        //     correct_answers: [],
+        //     almost_answers: [],
+        //     pickedVal: data.position,
+        //     current_game: data.this_game,
+        //     username: data.username
+        //   }) 
+        //   console.log("changed " + pi);
+        // });
 
-        // This is executes when a user picks the location for their ship
-        socketio.removeAllListeners("enter_to_client");
-        socketio.on("enter_to_client", (data) => {
-          this.setState({
-            isEntered: true,
-            rowVal: data.row,
-            correct_answers: data.correct,
-            almost_answers: data.almost,
-            current_game: data.this_game,
-            username: data.username
-          }) 
-        });
+        // // This is executes when a user picks the location for their ship
+        // socketio.removeAllListeners("enter_to_client");
+        // socketio.on("enter_to_client", (data) => {
+        //   this.setState({
+        //     isEntered: true,
+        //     isPicked: false,
+        //     rowVal: data.row,
+        //     correct_answers: data.correct,
+        //     almost_answers: data.almost,
+        //     current_game: data.this_game,
+        //     username: data.username
+        //   }) 
+        // });
 
         // // This is executes when a succesful hit is detected
         // socketio.on("hit_to_client", (data) => {
@@ -167,36 +165,40 @@ class Key extends React.Component {
         // })
         // Determine if the current key is a label
 
-        if(isPicked){ 
-            //console.log(this.state.letterVal);
-            document.getElementById(this.state.pickedVal).innerText = this.state.letterVal; 
-        }
+        // if(isPicked){ 
+        //     //console.log(this.state.letterVal);
+        //     document.getElementById(this.state.pickedVal).innerText = this.state.letterVal; 
+        //     // using an animation to bulg it out
+        //     this.myRef.current =    gsap.timeline()
+        //                                 .to("#" + this.state.pickedVal, { duration: 0.1, scale: 1.5 })
+        //                                 .to("#" + this.state.pickedVal, { duration: 0.2, scale: 1 });
+        // }
 
 
-        //trying tofigureout why the correctness systemsisnotupdating all the time
-        if(isEntered){ 
-            //console.log(this.state.letterVal);
-            // for(let i = 1; i < 6; i++){
-            //     let position = "" + this.state.rowVal + i;
-            //     document.getElementById(position).style.backgroundColor = "gray"; 
-            // }
+        // //trying tofigureout why the correctness systemsisnotupdating all the time
+        // if(isEntered){ 
+        //     //console.log(this.state.letterVal);
+        //     // for(let i = 1; i < 6; i++){
+        //     //     let position = "" + this.state.rowVal + i;
+        //     //     document.getElementById(position).style.backgroundColor = "gray"; 
+        //     // }
 
 
-            if(this.state.correct_answers.length > 0){
-                for(let i = 0; i < this.state.correct_answers.length; i++){
-                    let position = "" + this.state.rowVal + this.state.correct_answers[i];
-                    document.getElementById(position).style.backgroundColor = "green"; 
-                }
-            }
+        //     if(this.state.correct_answers.length > 0){
+        //         for(let i = 0; i < this.state.correct_answers.length; i++){
+        //             let position = "" + this.state.rowVal + this.state.correct_answers[i];
+        //             document.getElementById(position).style.backgroundColor = "green"; 
+        //         }
+        //     }
 
-            if(this.state.almost_answers.length > 0){
-                for(let i = 0; i < this.state.almost_answers.length; i++){
-                    let position = "" + this.state.rowVal + this.state.almost_answers[i];
-                    document.getElementById(position).style.backgroundColor = "yellow"; 
-                }
-            }
+        //     if(this.state.almost_answers.length > 0){
+        //         for(let i = 0; i < this.state.almost_answers.length; i++){
+        //             let position = "" + this.state.rowVal + this.state.almost_answers[i];
+        //             document.getElementById(position).style.backgroundColor = "yellow"; 
+        //         }
+        //     }
 
-        }
+        // }
 
         // if(isHit){ 
         //   document.getElementById(this.state.hitVal).style.backgroundColor = "#7bc100";  
@@ -230,7 +232,7 @@ class Key extends React.Component {
         // Otherwise, allow the user to pick a ship
         else {
             return (
-                <button className="key" id={this.props.letter} key={this.props.letter} onClick={() => this.pick()} >
+                <button className="key" id={this.props.letter} key={this.props.letter} onClick={() => this.pick()} ref={this.myRef}>
                     {this.props.letter}
                 </button>
             );

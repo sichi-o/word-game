@@ -394,14 +394,6 @@ io.sockets.on("connection", function (socket) {
             }
         }
 
-        // //checks the number of duplicate letterss in the answer
-        // for(let i = 0; i < answer.length; i++){
-        //     let count = answer.split(answer[i]).length - 1;
-        //     console.log("count of " + answer[i] + " = " + count);
-        // }
-        
-
-
         const guess_map = new Map();
 
         const answer_map = new Map();
