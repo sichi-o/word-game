@@ -11,28 +11,17 @@ class Key extends React.Component {
             gamerooms: this.props.game_list,
             current_game: this.props.current_game,
             username: this.props.username,
-            isHit: false,
-            isMiss: false,
-            isOppMiss: false,
-            isSub: false,
             isEntered: false,
-            isClose: false,
-            subVal: "",
-            hitVal: "",
-            missVal: "",
-            oppMissVal: "",
             pickedVal: "",
             letterVal: "",
             closeVal: "",
             rowVal: "",
             correct_answers: [],
-            almost_answers: [],
-            isClicked: false
+            almost_answers: []
         }
 
         //this.myRef = React.createRef();
         this.pick = this.pick.bind(this);
-        this.enter = this.enter.bind(this);
         this.validate = this.validate.bind(this);
         this.attack = this.attack.bind(this);
     }
@@ -51,13 +40,6 @@ class Key extends React.Component {
 
         // Emits a signal to the backend to pick a ship at a location
         socketio.emit("validate_to_server", { user: this.state.username, this_game: this.state.current_game, letter: this.props.letter })
-    }
-
-    enter() {
-        let socketio = this.props.socket;
-
-        // Emits a signal to the backend to pick a ship at a location
-        socketio.emit("enter_to_server", { user: this.state.username, this_game: this.state.current_game, letter: this.props.letter })
     }
 
     // Attacks another user's ship
@@ -207,25 +189,6 @@ class Key extends React.Component {
         //         }
         //     }
 
-        // }
-
-        // if(isHit){ 
-        //   document.getElementById(this.state.hitVal).style.backgroundColor = "#7bc100";  
-        // }
-
-        // if(isClose){
-        //   document.getElementById(this.state.closeVal).style.backgroundColor = "#f3dc04"; 
-        // }
-
-        // if(isMiss){
-        //   document.getElementById(this.state.missVal).style.backgroundColor = "rgb(255 0 55)"; 
-        // }
-
-        // if(isSub){
-        //   document.getElementById(this.state.subVal).style.backgroundColor = "gray";
-        // }
-        // if(isOppMiss){
-        //   document.getElementById(this.state.oppMissVal).style.backgroundColor = "#ffcccb";
         // }
 
         // When the game starts, it allows you to attack

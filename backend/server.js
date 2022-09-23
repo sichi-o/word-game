@@ -308,7 +308,7 @@ io.sockets.on("connection", function (socket) {
         let isLimitReached = false;
         console.log("this is the name of the user when picked: " + data["user"].name + " and their letter " + data["letter"]);
 
-        //if a row is full, then move on to the next one
+        //if a row is full, then don't do anything more
         if(gamerooms[game_index].userlist[user_index].current_col > 5){
             return;
             // gamerooms[game_index].userlist[user_index].current_col = 1;
@@ -398,9 +398,7 @@ io.sockets.on("connection", function (socket) {
         })
 
         let guess = gamerooms[game_index].userlist[user_index].guess;
-        let answer = gamerooms[game_index].answer;
-
-    
+      
         //can't guess if the length is less than 5
         if(guess.length < 5){
             return;
@@ -414,7 +412,19 @@ io.sockets.on("connection", function (socket) {
 
             //if it's not a valid word
             else{
-                console.log("nahh mann");
+                let message = "Not a valid word";
+
+                //reset the col number
+                gamerooms[game_index].userlist[user_index].current_col = 1;
+
+                //clears the guess
+                gamerooms[game_index].userlist[user_index].guess = "";
+
+                let current_row =  gamerooms[game_index].userlist[user_index].current_row;
+                // send out the updated list of the game and the list of gamerooms
+                io.sockets.to(userId).emit("wrong_to_client", { username: gamerooms[game_index].userlist[user_index], 
+                    this_game: gamerooms[game_index], row: current_row, message: message });
+    
             }
         });
 

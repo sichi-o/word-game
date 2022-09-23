@@ -11,24 +11,14 @@ class Square extends React.Component {
       gamerooms: this.props.game_list,
       current_game: this.props.current_game,
       username: this.props.username,
-      isHit: false,
-      isMiss: false,
-      isOppMiss: false,
-      isSub: false,
       isEntered: false,
-      isClose: false,
-      subVal: "",
-      hitVal: "",
-      missVal: "",
-      oppMissVal: "",
+      isWrong: false,
       pickedVal: "",
       letterVal: "",
       closeVal: "",
       rowVal: "",
       correct_answers: [],
-      almost_answers: [],
-      isClicked: false
-      
+      almost_answers: []
     } 
 
     this.myRef = React.createRef();
@@ -41,6 +31,7 @@ class Square extends React.Component {
     //const current_game = this.state.current_game;
     //const username = this.state.username;
     const isEntered = this.state.isEntered;
+    const isWrong = this.state.isWrong;
     
     // This is executes when a user picks the location for their ship
     socketio.removeAllListeners("pick_to_client");
@@ -51,6 +42,7 @@ class Square extends React.Component {
       this.setState({
         isPicked: true,
         isEntered: false,
+        isWrong: false,
         letterVal: data.letter,
         correct_answers: [],
         almost_answers: [],
@@ -67,12 +59,33 @@ class Square extends React.Component {
       this.setState({
         isEntered: true,
         isPicked: false,
+        isWrong: false,
         rowVal: data.row,
         correct_answers: data.correct,
         almost_answers: data.almost,
         current_game: data.this_game,
         username: data.username
       }) 
+    });
+
+    // This is executes when a user picks the location for their ship
+    socketio.removeAllListeners("wrong_to_client");
+    socketio.on("wrong_to_client", (data) => {
+      alert("this word is wrong");
+      // this.setState({
+      //   isEntered: false,
+      //   isPicked: false,
+      //   isWrong: true,
+      //   rowVal: data.row
+      // }) 
+
+      for (let i = 1; i < 6; i++) {
+        let position = "" + data.row + i;
+        document.getElementById(position).innerText = "";
+      }
+
+      //document.getElementById(this.state.pickedVal).innerText = this.state.letterVal;
+
     });
 
     // // This is executes when a succesful hit is detected
@@ -153,18 +166,18 @@ class Square extends React.Component {
     //   document.getElementById(this.state.oppMissVal).style.backgroundColor = "#ffcccb";
     // }
 
-    if(isPicked){ 
+    if(isPicked) {
       //console.log(this.state.letterVal);
-      document.getElementById(this.state.pickedVal).innerText = this.state.letterVal; 
+      document.getElementById(this.state.pickedVal).innerText = this.state.letterVal;
       // using an animation to bulg it out
-      this.myRef.current =    gsap.timeline()
-                                  .to("#" + this.state.pickedVal, { duration: 0.05, scale: 1.5 })
-                                  .to("#" + this.state.pickedVal, { duration: 0.1, scale: 1 });
+      this.myRef.current = gsap.timeline()
+        .to("#" + this.state.pickedVal, { duration: 0.05, scale: 1.5 })
+        .to("#" + this.state.pickedVal, { duration: 0.1, scale: 1 });
     }
 
 
-  //trying tofigureout why the correctness systemsisnotupdating all the time
-  if(isEntered){ 
+    //trying tofigureout why the correctness systemsisnotupdating all the time
+    if(isEntered) {
       //console.log(this.state.letterVal);
       // for(let i = 1; i < 6; i++){
       //     let position = "" + this.state.rowVal + i;
@@ -172,54 +185,61 @@ class Square extends React.Component {
       // }
 
 
-      if(this.state.correct_answers.length > 0){
-        for(let i = 0; i < this.state.correct_answers.length; i++){
+      if (this.state.correct_answers.length > 0) {
+        for (let i = 0; i < this.state.correct_answers.length; i++) {
           let position = "" + this.state.rowVal + this.state.correct_answers[i];
-          document.getElementById(position).style.backgroundColor = "green"; 
+          document.getElementById(position).style.backgroundColor = "green";
         }
 
         // if there only correct answers, then anything not in correct answers should be gray
-        if(this.state.almost_answers.length == 0){
-          for(let i = 1; i < 6; i++){
-            if(!this.state.correct_answers.includes(i) ){
+        if (this.state.almost_answers.length == 0) {
+          for (let i = 1; i < 6; i++) {
+            if (!this.state.correct_answers.includes(i)) {
               console.log("something_almo");
               let position = "" + this.state.rowVal + i;
-              document.getElementById(position).style.backgroundColor = "gray"; 
+              document.getElementById(position).style.backgroundColor = "gray";
             }
           }
         }
       }
 
-      if(this.state.almost_answers.length > 0){
-        for(let i = 0; i < this.state.almost_answers.length; i++){
+      if (this.state.almost_answers.length > 0) {
+        for (let i = 0; i < this.state.almost_answers.length; i++) {
           let position = "" + this.state.rowVal + this.state.almost_answers[i];
-          document.getElementById(position).style.backgroundColor = "yellow"; 
+          document.getElementById(position).style.backgroundColor = "yellow";
         }
 
         // if there are almost answers and something is notin the almost answers or the correct answers, then it should be gray
-        for(let i = 1; i < 6; i++){
-          if(!this.state.almost_answers.includes(i) && !this.state.correct_answers.includes(i) ){
+        for (let i = 1; i < 6; i++) {
+          if (!this.state.almost_answers.includes(i) && !this.state.correct_answers.includes(i)) {
             console.log("something_almo");
             let position = "" + this.state.rowVal + i;
-            document.getElementById(position).style.backgroundColor = "gray"; 
+            document.getElementById(position).style.backgroundColor = "gray";
           }
         }
       }
 
       ///let possible_values = [1,2,3,4,5];
       // if there areno correct answersor no almost answers then everything is gray
-      if(this.state.almost_answers.length == 0 && this.state.correct_answers.length == 0){
-        for(let i = 1; i < 6; i++){
+      if (this.state.almost_answers.length == 0 && this.state.correct_answers.length == 0) {
+        for (let i = 1; i < 6; i++) {
           console.log("allwrong");
           let position = "" + this.state.rowVal + i;
-          document.getElementById(position).style.backgroundColor = "gray"; 
+          document.getElementById(position).style.backgroundColor = "gray";
         }
       }
 
     }
 
+    // if(isWrong) {
+    //   for (let i = 1; i < 6; i++) {
+    //     let position = "" + this.state.rowVal + i;
+    //     document.getElementById(position).innerText = "";
+    //   }
+    // }
+    
     // When the game starts, it allows you to attack
-    if(this.props.start){
+    if(this.props.start) {
 
       return (
         <div className="square" id={this.props.position} key={this.props.position}>
@@ -229,14 +249,14 @@ class Square extends React.Component {
     }
 
     // Otherwise, allow the user to pick a ship
-    else{
+    else {
       return (
         <div className="square" id={this.props.position} key={this.props.position}>
           {this.props.value}
         </div>
       );
     }
-    
+
   }
 }
 export default Square;
