@@ -32,35 +32,6 @@ class Square extends React.Component {
     } 
 
     this.myRef = React.createRef();
-    this.pick = this.pick.bind(this);
-    //this.enter = this.enter.bind(this);
-    this.attack = this.attack.bind(this);
-  }
-
-  // Picks a user's ship at the beginning
-  pick(){ 
-    let socketio = this.props.socket;
-
-    // Emits a signal to the backend to pick a ship at a location
-    socketio.emit("pick_to_server", { user: this.state.username, this_game: this.state.current_game, position: this.props.position})
-  }
-
-  // Attacks another user's ship
-  attack(){
-    let socketio = this.props.socket;
-    let victim_index;
-
-    // Caluclates the index of the victim
-    if(this.state.current_game.userlist[0].name == this.state.username.name){
-      victim_index = 1;
-    }
-    else{
-      victim_index = 0;
-    }
-    
-    // Emits a signal to the backend to attack a server
-    socketio.emit("attack_to_server", { user: this.state.username, victim_index: victim_index, this_game: this.state.current_game, position: this.props.position});
-    
   }
 
   render() {
@@ -79,6 +50,7 @@ class Square extends React.Component {
       console.log("is picked " + pi);
       this.setState({
         isPicked: true,
+        isEntered: false,
         letterVal: data.letter,
         correct_answers: [],
         almost_answers: [],
@@ -186,8 +158,8 @@ class Square extends React.Component {
       document.getElementById(this.state.pickedVal).innerText = this.state.letterVal; 
       // using an animation to bulg it out
       this.myRef.current =    gsap.timeline()
-                                  .to("#" + this.state.pickedVal, { duration: 0.1, scale: 1.5 })
-                                  .to("#" + this.state.pickedVal, { duration: 0.2, scale: 1 });
+                                  .to("#" + this.state.pickedVal, { duration: 0.05, scale: 1.5 })
+                                  .to("#" + this.state.pickedVal, { duration: 0.1, scale: 1 });
     }
 
 
@@ -201,18 +173,49 @@ class Square extends React.Component {
 
 
       if(this.state.correct_answers.length > 0){
-          for(let i = 0; i < this.state.correct_answers.length; i++){
-              let position = "" + this.state.rowVal + this.state.correct_answers[i];
-              document.getElementById(position).style.backgroundColor = "green"; 
+        for(let i = 0; i < this.state.correct_answers.length; i++){
+          let position = "" + this.state.rowVal + this.state.correct_answers[i];
+          document.getElementById(position).style.backgroundColor = "green"; 
+        }
+
+        // if there only correct answers, then anything not in correct answers should be gray
+        if(this.state.almost_answers.length == 0){
+          for(let i = 1; i < 6; i++){
+            if(!this.state.correct_answers.includes(i) ){
+              console.log("something_almo");
+              let position = "" + this.state.rowVal + i;
+              document.getElementById(position).style.backgroundColor = "gray"; 
+            }
           }
+        }
       }
 
       if(this.state.almost_answers.length > 0){
-          for(let i = 0; i < this.state.almost_answers.length; i++){
-              let position = "" + this.state.rowVal + this.state.almost_answers[i];
-              document.getElementById(position).style.backgroundColor = "yellow"; 
+        for(let i = 0; i < this.state.almost_answers.length; i++){
+          let position = "" + this.state.rowVal + this.state.almost_answers[i];
+          document.getElementById(position).style.backgroundColor = "yellow"; 
+        }
+
+        // if there are almost answers and something is notin the almost answers or the correct answers, then it should be gray
+        for(let i = 1; i < 6; i++){
+          if(!this.state.almost_answers.includes(i) && !this.state.correct_answers.includes(i) ){
+            console.log("something_almo");
+            let position = "" + this.state.rowVal + i;
+            document.getElementById(position).style.backgroundColor = "gray"; 
           }
+        }
       }
+
+      ///let possible_values = [1,2,3,4,5];
+      // if there areno correct answersor no almost answers then everything is gray
+      if(this.state.almost_answers.length == 0 && this.state.correct_answers.length == 0){
+        for(let i = 1; i < 6; i++){
+          console.log("allwrong");
+          let position = "" + this.state.rowVal + i;
+          document.getElementById(position).style.backgroundColor = "gray"; 
+        }
+      }
+
     }
 
     // When the game starts, it allows you to attack

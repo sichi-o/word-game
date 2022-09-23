@@ -33,6 +33,7 @@ class Key extends React.Component {
         //this.myRef = React.createRef();
         this.pick = this.pick.bind(this);
         this.enter = this.enter.bind(this);
+        this.validate = this.validate.bind(this);
         this.attack = this.attack.bind(this);
     }
 
@@ -42,6 +43,14 @@ class Key extends React.Component {
 
         // Emits a signal to the backend to pick a ship at a location
         socketio.emit("pick_to_server", { user: this.state.username, this_game: this.state.current_game, letter: this.props.letter })
+    }
+
+
+    validate() {
+        let socketio = this.props.socket;
+
+        // Emits a signal to the backend to pick a ship at a location
+        socketio.emit("validate_to_server", { user: this.state.username, this_game: this.state.current_game, letter: this.props.letter })
     }
 
     enter() {
@@ -223,7 +232,7 @@ class Key extends React.Component {
         if (this.props.letter == "ENTER") {
 
             return (
-                <button className="key" id={this.props.letter} key={this.props.letter} onClick={() => this.enter()}>
+                <button className="key" id={this.props.letter} key={this.props.letter} onClick={() => this.validate()}>
                     {this.props.letter}
                 </button>
             );

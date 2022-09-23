@@ -6,7 +6,7 @@ const http = require("http"),
 const express = require('express');
 const app = express();
 const cors = require('cors');
-const { count } = require("console");
+const { count, Console } = require("console");
 
 app.use(express.json());
 app.use(cors())
@@ -332,6 +332,229 @@ io.sockets.on("connection", function (socket) {
     
     });
 
+    // function check_validity(guess){
+    //     let valid;
+        
+    //     fetch('https://thatwordleapi.azurewebsites.net/ask/?word='+ guess)
+    //     .then(response => response.json())
+    //     .then(data => function(){return data.Response})
+    //     .catch(err => console.error('Error:', err));   
+
+
+    //     //return valid;
+    // }
+
+    function check(guess, callback) {
+        // let xhttp = new XMLHttpRequest();
+        // xhttp.onreadystatechange = function () {
+        //     if (xhttp.readyState === 4 && xhttp.status === 200) { // request is done
+        //         callback(xhttp.responseText); // we're calling our method
+        //     }
+        // };
+        // xhttp.open('GET', "https://thatwordleapi.azurewebsites.net/ask/?word="+ guess);
+        // xhttp.send();
+        let word = guess.toLowerCase();
+        fetch('https://thatwordleapi.azurewebsites.net/ask/?word=' + word)
+        .then(response => response.json())
+        .then(data => callback(data.Response))
+        .catch(err => console.error('Error:', err));   
+    }
+    
+
+    socket.on('validate_to_server', function(data) {
+
+       let index_game = 0;
+        let index_user = 0;
+        let index_user_second = 0;
+
+        let game_index = -1;
+        let user_index = -1;
+
+        let correct_answers_positions = [];
+        let correct_answers_val = [];
+        let almost_answers = [];
+
+        //Gets the index of the game that we want to delete the user from
+        gamerooms.forEach(function(game){
+            if(game.name == data["this_game"].name){
+                game_index = index_game;
+                return;
+            }
+            index_game++;
+        })
+
+        //Gets the index of the user we wnat to delete for the userlist in the specific chatroom
+        gamerooms.forEach(function(game){
+            if(game.name == data["this_game"].name){
+                game.userlist.forEach(function(user){
+                    if(user.name == data["user"].name){
+                        user_index = index_user_second;
+                        return;
+                    }
+                    index_user_second++;
+                })     
+            }
+            index_user++;
+        })
+
+        let guess = gamerooms[game_index].userlist[user_index].guess;
+        let answer = gamerooms[game_index].answer;
+
+    
+        //can't guess if the length is less than 5
+        if(guess.length < 5){
+            return;
+        }
+
+        check(guess, function (result) {
+            //if it is a valid word
+            if(result){
+                enter(data);
+            }
+
+            //if it's not a valid word
+            else{
+                console.log("nahh mann");
+            }
+        });
+
+       // console.log(valid);
+    })
+
+    function enter(data) {
+
+        let index_game = 0;
+        let index_user = 0;
+        let index_user_second = 0;
+
+        let game_index = -1;
+        let user_index = -1;
+
+        let correct_answers_positions = [];
+        let correct_answers_val = [];
+        let almost_answers = [];
+
+        //Gets the index of the game that we want to delete the user from
+        gamerooms.forEach(function(game){
+            if(game.name == data["this_game"].name){
+                game_index = index_game;
+                return;
+            }
+            index_game++;
+        })
+
+        //Gets the index of the user we wnat to delete for the userlist in the specific chatroom
+        gamerooms.forEach(function(game){
+            if(game.name == data["this_game"].name){
+                game.userlist.forEach(function(user){
+                    if(user.name == data["user"].name){
+                        user_index = index_user_second;
+                        return;
+                    }
+                    index_user_second++;
+                })     
+            }
+            index_user++;
+        })
+
+        let guess = gamerooms[game_index].userlist[user_index].guess;
+        let answer = gamerooms[game_index].answer;
+
+        
+        // Checks if the limit of letters picked is reached
+        let isLimitReached = false;
+        console.log("this is the name of the user when picked: " + data["user"].name + " and their letter " + data["letter"]);
+
+        gamerooms[game_index].userlist[user_index].current_col = 1;
+        let prev_row =  gamerooms[game_index].userlist[user_index].current_row;
+        gamerooms[game_index].userlist[user_index].current_row = String.fromCharCode(gamerooms[game_index].userlist[user_index].current_row.charCodeAt(0) + 1);
+
+        console.log("the answer is " +  answer);
+        console.log("the guess is " + gamerooms[game_index].userlist[user_index].guess);
+        
+        //checks for the correctanswer in the correct position
+        for(let i = 0; i < answer.length; i++){
+            if(guess[i] == answer[i]){
+                correct_answers_positions.push(i+1); //offest by 1 start from 1.. to 5
+                correct_answers_val.push(guess[i]);
+            }
+        }
+
+        const guess_map = new Map();
+
+        const answer_map = new Map();
+
+        // setting map values of the answer to get the freqeuncey of each letter in the answer
+        for(let i = 0; i < answer.length; i++){
+            if(!answer_map.has(answer[i])){
+                answer_map.set(answer[i], 1);
+            }
+            else{
+                answer_map.set(answer[i], answer_map.get(answer[i]) + 1);
+            }
+        }
+       
+
+        //makes sure that we only add the ones that aren't correctly guessed to the almost
+        // makes sure that the maximum we can have ofalmost isthe mac number of duplicates in the letter
+        for(let i = 0; i < answer.length; i++){
+ 
+            if(!guess_map.has(guess[i])){
+                console.log("ok it's falsefirst");
+                guess_map.set(guess[i], 1);
+                if(answer.includes(guess[i])){
+                    almost_answers.push(i+1); //offest by 1 start from 1.. to 5
+                    console.log("(first) the entries of " + guess[i] + guess_map.get(guess[i]));
+                }
+            }
+    
+            //if a dupe exists then make sure it's below the number of allowed dupes
+            else{
+                guess_map.set(guess[i], guess_map.get(guess[i]) + 1);
+                if(guess_map.get(guess[i]) <= answer_map.get(guess[i])){
+                    console.log("entered first if")
+                        if(answer.includes(guess[i])){
+                            almost_answers.push(i+1); //offest by 1 start from 1.. to 5
+                            console.log("the entries of " + guess[i] + guess_map.get(guess[i]));
+                        }
+                }
+            }
+        }
+
+
+        console.log("the almost before contains " + almost_answers);
+        console.log("the correct before contains " + correct_answers_positions);
+
+        //remove duplicates in the almost answers if we've met the cap on dupes already
+        for(let i = 0; i < correct_answers_positions.length; i++){
+            if(almost_answers.includes(correct_answers_positions[i])){
+                almost_answers.splice(almost_answers.indexOf(correct_answers_positions[i]), 1);
+            }
+
+            if(guess_map.get(guess[i]) > answer_map.get(guess[i])){
+                console.log("we deleted " + correct_answers_positions[i]);
+                almost_answers.splice(almost_answers.indexOf(correct_answers_positions[i]), 1);
+            }
+        }
+        
+        console.log("the almost now contains " + almost_answers);
+        console.log("the correct now contains " + correct_answers_positions);
+
+        //clears the guess
+        gamerooms[game_index].userlist[user_index].guess = "";
+
+        // //the position of the guess
+        // position = "" + gamerooms[game_index].userlist[user_index].current_row + gamerooms[game_index].userlist[user_index].current_col;
+        // console.log(position + " is this position of the guess");
+
+        // //console.log("the value of isLimitReached: " + isLimitReached);
+    
+        // send out the updated list of the game and the list of gamerooms
+        io.sockets.to(userId).emit("enter_to_client", { username: gamerooms[game_index].userlist[user_index], 
+            this_game: gamerooms[game_index], row: prev_row, correct: correct_answers_positions, almost: almost_answers, letter: data["letter"], status: isLimitReached });
+    
+    };
+
     socket.on('enter_to_server', function(data) {
 
         let index_game = 0;
@@ -371,10 +594,7 @@ io.sockets.on("connection", function (socket) {
         let guess = gamerooms[game_index].userlist[user_index].guess;
         let answer = gamerooms[game_index].answer;
 
-        //can't guess if the length is less than 5
-        if(guess.length < 5){
-            return;
-        }
+        
         // Checks if the limit of letters picked is reached
         let isLimitReached = false;
         console.log("this is the name of the user when picked: " + data["user"].name + " and their letter " + data["letter"]);
