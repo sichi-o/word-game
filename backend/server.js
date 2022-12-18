@@ -7,6 +7,7 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const { count, Console } = require("console");
+const { callbackify } = require('util');
 
 app.use(express.json());
 app.use(cors())
@@ -23,7 +24,7 @@ const io = socketio.listen(server);
 const max_letters = 5;
 
 // Here define the Gameroom object
-function Gameroom(owner, name){
+function Gameroom(owner, name, answer){
     this.name = name;
     this.owner = owner;
     this.userlist = [];
@@ -32,12 +33,8 @@ function Gameroom(owner, name){
     //contains the moves list as a list of postiions
     this.movelist = [];
     this.easy = false;
-
-
-    fetch('https://thatwordleapi.azurewebsites.net/get/')
-    .then(response => response.json())
-    .then(data => this.answer = data.Response.toUpperCase())
-    .catch(err => console.error('Error:', err));   
+    this.answer = answer.toUpperCase();
+    console.log("yooo " + this.answer)
 
 }
 
@@ -58,6 +55,44 @@ function User(name){
     this.score = 0;
     this.ready = false;
     this.socket = "";
+}
+
+function check(guess, callback) {
+    // let xhttp = new XMLHttpRequest();
+    // xhttp.onreadystatechange = function () {
+    //     if (xhttp.readyState === 4 && xhttp.status === 200) { // request is done
+    //         callback(xhttp.responseText); // we're calling our method
+    //     }
+    // };
+    // xhttp.open('GET', "https://thatwordleapi.azurewebsites.net/ask/?word="+ guess);
+    // xhttp.send();
+    let word = guess.toLowerCase();
+    // fetch('https://thatwordleapi.azurewebsites.net/ask/?word=' + word)
+    // .then(response => response.json())
+    // .then(data => callback(data.Response))
+    // .catch(err => console.error('Error:', err));   
+    fs.readFile("./backend/bank.txt", function (err, data) {
+        if (err) throw err;
+        if(data.includes(word)){
+            console.log("YYEYYE")
+            callback(true);
+        }
+        else{
+            console.log("no");
+            callback(false);
+        }
+    });
+}
+
+function randomWord(callback){
+    fs.readFile("./backend/bank.txt", function (err, data) {
+        if (err){
+            throw err;
+        } 
+        let array = data.toString().split("\n");
+        randomIndex = Math.floor(Math.random() * array.length);
+        callback(true, array[randomIndex]);
+    });
 }
 
 // The array of gamerooms
@@ -94,6 +129,7 @@ app.post('/login', (req, res) => {
     }
 })
 
+
 io.sockets.on("connection", function (socket) {
     console.log("connected");
 
@@ -115,32 +151,39 @@ io.sockets.on("connection", function (socket) {
 
         console.log("insert room of: " + data["user"].name + " with the name: " + data["game_name"]);
 
-        //Creates a game room
-        let default_gameroom = new Gameroom(data["user"], data["game_name"]);
+        randomWord(function (result, answer){
+            //if getting a rando word is successful
+            if(result){
+                //Creates a game room
+                let default_gameroom = new Gameroom(data["user"], data["game_name"], answer);
 
-        //Sets the password to the specified password variable
-        default_gameroom.password = data["password"];
+                //Sets the password to the specified password variable
+                default_gameroom.password = data["password"];
 
-        // Iterate through the list of gamerooms and if it already exists then alert the user of that
-        let match = false;
-        for(let i = 0; i < gamerooms.length; i++){
-            if(gamerooms[i].name == default_gameroom.name){
-                match = true;
+                // Iterate through the list of gamerooms and if it already exists then alert the user of that
+                let match = false;
+                for(let i = 0; i < gamerooms.length; i++){
+                    if(gamerooms[i].name == default_gameroom.name){
+                        match = true;
+                    }
+                }
+
+                // If the chatroom exists, then alert the user
+                if(match){
+                    let msg = "Game Room with that name already exists!";
+                    io.sockets.to(userId).emit("error_to_client", { message: msg });
+                }
+                else{
+                    // Adds to list of gamerooms
+                    gamerooms.push(default_gameroom);
+
+                    // Emit this mesage to everyone not currently in a game
+                    io.sockets.to("not_in_a_game").emit("insert_room_to_client", { game_list: gamerooms, username: data["user"]}); // broadcast the message to other users
+                }
             }
-        }
+        })
 
-        // If the chatroom exists, then alert the user
-        if(match){
-            let msg = "Game Room with that name already exists!";
-            io.sockets.to(userId).emit("error_to_client", { message: msg });
-        }
-        else{
-            // Adds to list of gamerooms
-            gamerooms.push(default_gameroom);
-
-            // Emit this mesage to everyone not currently in a game
-            io.sockets.to("not_in_a_game").emit("insert_room_to_client", { game_list: gamerooms, username: data["user"]}); // broadcast the message to other users
-        }
+        
     });
 
     // Joins the room ands displays the user list
@@ -344,21 +387,7 @@ io.sockets.on("connection", function (socket) {
     //     //return valid;
     // }
 
-    function check(guess, callback) {
-        // let xhttp = new XMLHttpRequest();
-        // xhttp.onreadystatechange = function () {
-        //     if (xhttp.readyState === 4 && xhttp.status === 200) { // request is done
-        //         callback(xhttp.responseText); // we're calling our method
-        //     }
-        // };
-        // xhttp.open('GET', "https://thatwordleapi.azurewebsites.net/ask/?word="+ guess);
-        // xhttp.send();
-        let word = guess.toLowerCase();
-        fetch('https://thatwordleapi.azurewebsites.net/ask/?word=' + word)
-        .then(response => response.json())
-        .then(data => callback(data.Response))
-        .catch(err => console.error('Error:', err));   
-    }
+    
     
 
     socket.on('validate_to_server', function(data) {
@@ -407,11 +436,13 @@ io.sockets.on("connection", function (socket) {
         check(guess, function (result) {
             //if it is a valid word
             if(result){
+                console.log("hmmm");
                 enter(data);
             }
 
             //if it's not a valid word
             else{
+                console.log("novalied")
                 let message = "Not a valid word";
 
                 //reset the col number
@@ -424,9 +455,9 @@ io.sockets.on("connection", function (socket) {
                 // send out the updated list of the game and the list of gamerooms
                 io.sockets.to(userId).emit("wrong_to_client", { username: gamerooms[game_index].userlist[user_index], 
                     this_game: gamerooms[game_index], row: current_row, message: message });
-    
+
             }
-        });
+        })
 
        // console.log(valid);
     })
@@ -510,7 +541,6 @@ io.sockets.on("connection", function (socket) {
         for(let i = 0; i < answer.length; i++){
  
             if(!guess_map.has(guess[i])){
-                console.log("ok it's falsefirst");
                 guess_map.set(guess[i], 1);
                 if(answer.includes(guess[i])){
                     almost_answers.push(i+1); //offest by 1 start from 1.. to 5
@@ -644,7 +674,6 @@ io.sockets.on("connection", function (socket) {
         for(let i = 0; i < answer.length; i++){
  
             if(!guess_map.has(guess[i])){
-                console.log("ok it's falsefirst");
                 guess_map.set(guess[i], 1);
                 if(answer.includes(guess[i])){
                     almost_answers.push(i+1); //offest by 1 start from 1.. to 5

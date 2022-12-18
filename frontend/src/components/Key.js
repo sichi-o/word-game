@@ -37,7 +37,7 @@ class Key extends React.Component {
 
     validate() {
         let socketio = this.props.socket;
-
+        
         // Emits a signal to the backend to pick a ship at a location
         socketio.emit("validate_to_server", { user: this.state.username, this_game: this.state.current_game, letter: this.props.letter })
     }

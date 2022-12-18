@@ -178,42 +178,60 @@ class Square extends React.Component {
 
     //trying tofigureout why the correctness systemsisnotupdating all the time
     if(isEntered) {
-      //console.log(this.state.letterVal);
-      // for(let i = 1; i < 6; i++){
-      //     let position = "" + this.state.rowVal + i;
-      //     document.getElementById(position).style.backgroundColor = "gray"; 
-      // }
-
-
       if (this.state.correct_answers.length > 0) {
+        //let delay = 0;
         for (let i = 0; i < this.state.correct_answers.length; i++) {
           let position = "" + this.state.rowVal + this.state.correct_answers[i];
+
+          // this.myRef.current = gsap.timeline()
+          //   .to("#" + position, { duration: 0.5, backgroundColor: "green", delay: delay})
           document.getElementById(position).style.backgroundColor = "green";
+
+           //delay+=0.1;
         }
 
         // if there only correct answers, then anything not in correct answers should be gray
         if (this.state.almost_answers.length == 0) {
+
+          //delay = 0;
           for (let i = 1; i < 6; i++) {
             if (!this.state.correct_answers.includes(i)) {
               console.log("something_almo");
               let position = "" + this.state.rowVal + i;
               document.getElementById(position).style.backgroundColor = "gray";
+
+              // this.myRef.current = gsap.timeline()
+              //   .to("#" + position, { duration: 0.5, backgroundColor: "gray" , delay: delay})
+
+              //delay+=0.1;
             }
           }
         }
       }
 
       if (this.state.almost_answers.length > 0) {
+        let delay = 0;
         for (let i = 0; i < this.state.almost_answers.length; i++) {
           let position = "" + this.state.rowVal + this.state.almost_answers[i];
           document.getElementById(position).style.backgroundColor = "yellow";
+
+        //   this.myRef.current = gsap.timeline()
+        //         .to("#" + position, { duration: 0.5, backgroundColor: "yellow" , delay: delay})
+
+        // delay+=0.1;
         }
 
+        delay = 0;
         // if there are almost answers and something is notin the almost answers or the correct answers, then it should be gray
         for (let i = 1; i < 6; i++) {
           if (!this.state.almost_answers.includes(i) && !this.state.correct_answers.includes(i)) {
             console.log("something_almo");
             let position = "" + this.state.rowVal + i;
+
+            // this.myRef.current = gsap.timeline()
+            //     .to("#" + position, { duration: 0.5, backgroundColor: "gray" , delay: delay})
+
+            //delay+=0.1;
             document.getElementById(position).style.backgroundColor = "gray";
           }
         }
@@ -222,10 +240,15 @@ class Square extends React.Component {
       ///let possible_values = [1,2,3,4,5];
       // if there areno correct answersor no almost answers then everything is gray
       if (this.state.almost_answers.length == 0 && this.state.correct_answers.length == 0) {
+        //let delay = 0;
         for (let i = 1; i < 6; i++) {
           console.log("allwrong");
           let position = "" + this.state.rowVal + i;
           document.getElementById(position).style.backgroundColor = "gray";
+
+          // this.myRef.current = gsap.timeline()
+          //       .to("#" + position, { duration: 0.5, backgroundColor: "gray" , delay: delay})
+          // delay+=0.1;
         }
       }
 
