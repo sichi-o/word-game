@@ -26,7 +26,7 @@ class Key extends React.Component {
         this.attack = this.attack.bind(this);
     }
 
-    // Picks a user's ship at the beginning
+    // Picks a letter onthe keyboard
     pick() {
         let socketio = this.props.socket;
 
@@ -34,7 +34,14 @@ class Key extends React.Component {
         socketio.emit("pick_to_server", { user: this.state.username, this_game: this.state.current_game, letter: this.props.letter })
     }
 
+    delete() {
+        let socketio = this.props.socket;
 
+        // Emits a signal to the backend to pick a ship at a location
+        socketio.emit("delete_to_server", { user: this.state.username, this_game: this.state.current_game, letter: this.props.letter })
+    }
+
+    // Happens when you press enter for a word to get validated on the server end
     validate() {
         let socketio = this.props.socket;
         
@@ -191,9 +198,8 @@ class Key extends React.Component {
 
         // }
 
-        // When the game starts, it allows you to attack
+        // When the game starts, it allows you to press enter
         if (this.props.letter == "ENTER") {
-
             return (
                 <button className="key" id={this.props.letter} key={this.props.letter} onClick={() => this.validate()}>
                     {this.props.letter}
@@ -201,7 +207,15 @@ class Key extends React.Component {
             );
         }
 
-        // Otherwise, allow the user to pick a ship
+        else if (this.props.letter == "<-") {
+            return (
+                <button className="key" id={this.props.letter} key={this.props.letter} onClick={() => this.delete()}>
+                    {this.props.letter}
+                </button>
+            );
+        }
+
+        // Otherwise, insert a letter
         else {
             return (
                 <button className="key" id={this.props.letter} key={this.props.letter} onClick={() => this.pick()} ref={this.myRef}>

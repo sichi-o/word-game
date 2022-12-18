@@ -8,6 +8,7 @@ class Square extends React.Component {
     super(props); 
     this.state = { 
       isPicked: false,
+      isDeleted: false,
       gamerooms: this.props.game_list,
       current_game: this.props.current_game,
       username: this.props.username,
@@ -28,6 +29,7 @@ class Square extends React.Component {
     const isLabel = this.props.isLabel;
     let socketio = this.props.socket;
     const isPicked = this.state.isPicked;
+    const isDeleted = this.state.isDeleted;
     //const current_game = this.state.current_game;
     //const username = this.state.username;
     const isEntered = this.state.isEntered;
@@ -41,6 +43,28 @@ class Square extends React.Component {
       console.log("is picked " + pi);
       this.setState({
         isPicked: true,
+        isDeleted: false,
+        isEntered: false,
+        isWrong: false,
+        letterVal: data.letter,
+        correct_answers: [],
+        almost_answers: [],
+        pickedVal: data.position,
+        current_game: data.this_game,
+        username: data.username
+      }) 
+      console.log("changed " + pi);
+    });
+
+    // This is executes when a user picks the location for their ship
+    socketio.removeAllListeners("delete_to_client");
+    socketio.on("delete_to_client", (data) => {
+      let pi = this.state.isPicked;
+      console.log("letter deleted: " + data.letter);
+      console.log("is deleted " + pi);
+      this.setState({
+        isDeleted: true,
+        isPicked: false,
         isEntered: false,
         isWrong: false,
         letterVal: data.letter,
@@ -174,6 +198,17 @@ class Square extends React.Component {
         .to("#" + this.state.pickedVal, { duration: 0.05, scale: 1.5 })
         .to("#" + this.state.pickedVal, { duration: 0.1, scale: 1 });
     }
+
+    if(isDeleted) {
+      //console.log(this.state.letterVal);
+      document.getElementById(this.state.pickedVal).innerText = "";
+      // using an animation to bulg it out
+      this.myRef.current = gsap.timeline()
+        .to("#" + this.state.pickedVal, { duration: 0.05, scale: 1.5 })
+        .to("#" + this.state.pickedVal, { duration: 0.1, scale: 1 });
+    }
+
+
 
 
     //trying tofigureout why the correctness systemsisnotupdating all the time

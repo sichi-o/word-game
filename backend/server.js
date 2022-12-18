@@ -375,20 +375,69 @@ io.sockets.on("connection", function (socket) {
     
     });
 
-    // function check_validity(guess){
-    //     let valid;
+    socket.on('delete_to_server', function(data) {
+
+        let index_game = 0;
+        let index_user = 0;
+        let index_user_second = 0;
+
+        let game_index = -1;
+        let user_index = -1;
+
+        //Gets the index of the game that we want to delete the user from
+        gamerooms.forEach(function(game){
+            if(game.name == data["this_game"].name){
+                game_index = index_game;
+                return;
+            }
+            index_game++;
+        })
+
+        //Gets the index of the user we wnat to delete for the userlist in the specific chatroom
+        gamerooms.forEach(function(game){
+            if(game.name == data["this_game"].name){
+                game.userlist.forEach(function(user){
+                    if(user.name == data["user"].name){
+                        user_index = index_user_second;
+                        return;
+                    }
+                    index_user_second++;
+                })     
+            }
+            index_user++;
+        })
+
+        // Checks if the limit of letters picked is reached
+        let isLimitReached = false;
+        console.log("this is the name of the user when picked: " + data["user"].name + " and their letter " + data["letter"]);
+
+        //if a row is empty, then don't do anything more
+        if(gamerooms[game_index].userlist[user_index].current_col == 1){
+            return;
+            // gamerooms[game_index].userlist[user_index].current_col = 1;
+            // gamerooms[game_index].userlist[user_index].current_row = String.fromCharCode(gamerooms[game_index].userlist[user_index].current_row.charCodeAt(0) + 1);
+        }
+
+        //removes last letter of the guess
+        gamerooms[game_index].userlist[user_index].guess = gamerooms[game_index].userlist[user_index].guess.slice(0, -1); 
         
-    //     fetch('https://thatwordleapi.azurewebsites.net/ask/?word='+ guess)
-    //     .then(response => response.json())
-    //     .then(data => function(){return data.Response})
-    //     .catch(err => console.error('Error:', err));   
+        console.log("the new guess is " + gamerooms[game_index].userlist[user_index].guess);
 
+        //go back one
+        gamerooms[game_index].userlist[user_index].current_col--;
 
-    //     //return valid;
-    // }
-
+        //the position of the guess
+        position = "" + gamerooms[game_index].userlist[user_index].current_row + gamerooms[game_index].userlist[user_index].current_col;
+        console.log(position + " is this position");
+        
+       
+        // //console.log("the value of isLimitReached: " + isLimitReached);
     
+        // send out the updated list of the game and the list of gamerooms
+        io.sockets.to(userId).emit("delete_to_client", { username: gamerooms[game_index].userlist[user_index], 
+            this_game: gamerooms[game_index], position: position, letter: data["letter"], status: isLimitReached });
     
+    });
 
     socket.on('validate_to_server', function(data) {
 
@@ -597,6 +646,7 @@ io.sockets.on("connection", function (socket) {
 
     socket.on('enter_to_server', function(data) {
 
+        console.log("YOO MEEMMEMEMEME")
         let index_game = 0;
         let index_user = 0;
         let index_user_second = 0;
