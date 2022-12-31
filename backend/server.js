@@ -487,6 +487,8 @@ io.sockets.on("connection", function (socket) {
             if(result){
                 console.log("hmmm");
                 enter(data);
+
+
             }
 
             //if it's not a valid word
@@ -555,6 +557,7 @@ io.sockets.on("connection", function (socket) {
         let isLimitReached = false;
         console.log("this is the name of the user when picked: " + data["user"].name + " and their letter " + data["letter"]);
 
+        //Sets the postioning of where the person starts their next guess
         gamerooms[game_index].userlist[user_index].current_col = 1;
         let prev_row =  gamerooms[game_index].userlist[user_index].current_row;
         gamerooms[game_index].userlist[user_index].current_row = String.fromCharCode(gamerooms[game_index].userlist[user_index].current_row.charCodeAt(0) + 1);
@@ -562,7 +565,7 @@ io.sockets.on("connection", function (socket) {
         console.log("the answer is " +  answer);
         console.log("the guess is " + gamerooms[game_index].userlist[user_index].guess);
         
-        //checks for the correctanswer in the correct position
+        //checks for the correct answer in the correct position
         for(let i = 0; i < answer.length; i++){
             if(guess[i] == answer[i]){
                 correct_answers_positions.push(i+1); //offest by 1 start from 1.. to 5
@@ -637,6 +640,60 @@ io.sockets.on("connection", function (socket) {
         // console.log(position + " is this position of the guess");
 
         // //console.log("the value of isLimitReached: " + isLimitReached);
+
+        //if there are five correct letters then a winner is declared
+        if(correct_answers_val.length == 5){
+            let winner = gamerooms[game_index].userlist[user_index].name;
+            
+            // send out the updated list of the game and the list of gamerooms
+            io.sockets.to(userId).emit("enter_to_client", { username: gamerooms[game_index].userlist[user_index], 
+                this_game: gamerooms[game_index], row: prev_row, correct: correct_answers_positions, almost: almost_answers, letter: data["letter"], status: isLimitReached });
+    
+            gamerooms[game_index].userlist[user_index].letters = [];
+            gamerooms[game_index].userlist[user_index].correct_letters = [];
+            gamerooms[game_index].userlist[user_index].ready = false;
+            gamerooms[game_index].userlist[user_index].score = 0;
+            gamerooms[game_index].userlist[user_index].movelist = [];
+            
+            gamerooms.splice(game_index, 1);
+
+            console.log("WE HAVE A WINNER: " + winner);
+
+            io.sockets.to(`${data["this_game"].name}`).emit("win_to_client", { winner: winner, game_list: gamerooms });
+            io.in(`${data["this_game"].name}`).socketsJoin("not_in_a_game");
+            
+            io.in(`${data["this_game"].name}`).socketsLeave(`${data["this_game"].name}`);
+
+            return;
+        }
+
+        //if At this point youhave not won and you are atthe last rown then you have lost
+        if(prev_row == "F"){
+            console.log("YOU LOSE")
+
+            let loser = gamerooms[game_index].userlist[user_index].name;
+            
+            // send out the updated list of the game and the list of gamerooms
+            io.sockets.to(userId).emit("enter_to_client", { username: gamerooms[game_index].userlist[user_index], 
+                this_game: gamerooms[game_index], row: prev_row, correct: correct_answers_positions, almost: almost_answers, letter: data["letter"], status: isLimitReached });
+    
+            gamerooms[game_index].userlist[user_index].letters = [];
+            gamerooms[game_index].userlist[user_index].correct_letters = [];
+            gamerooms[game_index].userlist[user_index].ready = false;
+            gamerooms[game_index].userlist[user_index].score = 0;
+            gamerooms[game_index].userlist[user_index].movelist = [];
+            
+            gamerooms.splice(game_index, 1);
+
+            console.log("WE HAVE A LOSER: " + loser);
+
+            io.sockets.to(`${data["this_game"].name}`).emit("lose_to_client", { loser: loser, game_list: gamerooms });
+            io.in(`${data["this_game"].name}`).socketsJoin("not_in_a_game");
+            
+            io.in(`${data["this_game"].name}`).socketsLeave(`${data["this_game"].name}`);
+
+            return;
+        }
     
         // send out the updated list of the game and the list of gamerooms
         io.sockets.to(userId).emit("enter_to_client", { username: gamerooms[game_index].userlist[user_index], 
@@ -704,6 +761,7 @@ io.sockets.on("connection", function (socket) {
             }
         }
 
+
         const guess_map = new Map();
 
         const answer_map = new Map();
@@ -771,6 +829,8 @@ io.sockets.on("connection", function (socket) {
         // console.log(position + " is this position of the guess");
 
         // //console.log("the value of isLimitReached: " + isLimitReached);
+
+        
     
         // send out the updated list of the game and the list of gamerooms
         io.sockets.to(userId).emit("enter_to_client", { username: gamerooms[game_index].userlist[user_index], 

@@ -15,7 +15,9 @@ class Game extends React.Component {
       leaveAll: false,
       hasWon: false,
       winner: "",
-      justWon: false
+      loser: "",
+      justWon: false,
+      hasLost: false
     };
   }
 
@@ -27,6 +29,7 @@ class Game extends React.Component {
     const start = this.state.start;
 
     const hasWon = this.state.hasWon;
+    const hasLost = this.state.hasLost;
     const justWon = this.state.justWon;
   
     // Executes when someone leaves a room
@@ -60,8 +63,25 @@ class Game extends React.Component {
         })
     })
 
+    socketio.removeAllListeners("lose_to_client");
+    socketio.on("lose_to_client", (data) => {
+        this.setState({
+            hasLost: true,
+            loser: data.loser,
+            gamerooms: data.game_list
+        })
+    })
+
     if(hasWon){
       alert(this.state.winner + " won the game!")
+      console.log("slskskskks")
+      return (
+        <Lobby username={this.props.username} game_list={this.state.gamerooms} socket={socketio} />
+      )
+    }
+
+    if(hasLost){
+      alert(this.state.loser + " lost the game!")
       console.log("slskskskks")
       return (
         <Lobby username={this.props.username} game_list={this.state.gamerooms} socket={socketio} />
