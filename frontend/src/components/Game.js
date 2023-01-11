@@ -30,7 +30,7 @@ class Game extends React.Component {
 
     const hasWon = this.state.hasWon;
     const hasLost = this.state.hasLost;
-    const justWon = this.state.justWon;
+  
   
     // Executes when someone leaves a room
     socketio.removeAllListeners("leave_room_to_client");

@@ -26,14 +26,14 @@ class Square extends React.Component {
   }
 
   render() {
-    const isLabel = this.props.isLabel;
+    //const isLabel = this.props.isLabel;
     let socketio = this.props.socket;
     const isPicked = this.state.isPicked;
     const isDeleted = this.state.isDeleted;
     //const current_game = this.state.current_game;
     //const username = this.state.username;
     const isEntered = this.state.isEntered;
-    const isWrong = this.state.isWrong;
+   // const isWrong = this.state.isWrong;
     
     // This is executes when a user picks the location for their ship
     socketio.removeAllListeners("pick_to_client");
@@ -226,7 +226,7 @@ class Square extends React.Component {
         }
 
         // if there only correct answers, then anything not in correct answers should be gray
-        if (this.state.almost_answers.length == 0) {
+        if (this.state.almost_answers.length === 0) {
 
           //delay = 0;
           for (let i = 1; i < 6; i++) {
@@ -245,7 +245,7 @@ class Square extends React.Component {
       }
 
       if (this.state.almost_answers.length > 0) {
-        let delay = 0;
+        //let delay = 0;
         for (let i = 0; i < this.state.almost_answers.length; i++) {
           let position = "" + this.state.rowVal + this.state.almost_answers[i];
           document.getElementById(position).style.backgroundColor = "yellow";
@@ -256,7 +256,7 @@ class Square extends React.Component {
         // delay+=0.1;
         }
 
-        delay = 0;
+        //delay = 0;
         // if there are almost answers and something is notin the almost answers or the correct answers, then it should be gray
         for (let i = 1; i < 6; i++) {
           if (!this.state.almost_answers.includes(i) && !this.state.correct_answers.includes(i)) {
@@ -274,7 +274,7 @@ class Square extends React.Component {
 
       ///let possible_values = [1,2,3,4,5];
       // if there areno correct answersor no almost answers then everything is gray
-      if (this.state.almost_answers.length == 0 && this.state.correct_answers.length == 0) {
+      if (this.state.almost_answers.length === 0 && this.state.correct_answers.length === 0) {
         //let delay = 0;
         for (let i = 1; i < 6; i++) {
           console.log("allwrong");

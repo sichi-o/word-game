@@ -1,6 +1,6 @@
 import React from 'react';
 
-let score = 7;
+
 
 class Key extends React.Component {
 
@@ -55,7 +55,7 @@ class Key extends React.Component {
         let victim_index;
 
         // Caluclates the index of the victim
-        if (this.state.current_game.userlist[0].name == this.state.username.name) {
+        if (this.state.current_game.userlist[0].name === this.state.username.name) {
             victim_index = 1;
         }
         else {
@@ -69,10 +69,10 @@ class Key extends React.Component {
 
     render() {
         //const isLabel = this.props.isLabel;
-        let socketio = this.props.socket;
-        const isPicked = this.state.isPicked;
+       // let socketio = this.props.socket;
+       // const isPicked = this.state.isPicked;
         //const current_game = this.state.current_game;
-        const isEntered = this.state.isEntered;
+        //const isEntered = this.state.isEntered;
         // const username = this.state.username;
 
         // // This is executes when a user picks the location for their ship
@@ -199,7 +199,7 @@ class Key extends React.Component {
         // }
 
         // When the game starts, it allows you to press enter
-        if (this.props.letter == "ENTER") {
+        if (this.props.letter === "ENTER") {
             return (
                 <button className="key" id={this.props.letter} key={this.props.letter} onClick={() => this.validate()}>
                     {this.props.letter}
@@ -207,7 +207,7 @@ class Key extends React.Component {
             );
         }
 
-        else if (this.props.letter == "<-") {
+        else if (this.props.letter === "<-") {
             return (
                 <button className="key" id={this.props.letter} key={this.props.letter} onClick={() => this.delete()}>
                     {this.props.letter}

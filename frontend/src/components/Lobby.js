@@ -93,7 +93,7 @@ class Lobby extends React.Component {
 
         if (joinedRoom) {
 
-            if (current_game.userlist.length == 2) {
+            if (current_game.userlist.length === 2) {
                 console.log("2 USERS ARE IN THE ROOM");
 
                 return (
@@ -103,7 +103,7 @@ class Lobby extends React.Component {
             }
             else {
                 console.log("forfeit state in ROOM is: " + isForfeit);
-                if (isForfeit == true) {
+                if (isForfeit === true) {
                     return (
                         <div className="forfeit_game" key={"forfeit"}>
                             <p>You are the Winner! {forfeiter} forfeited.</p>

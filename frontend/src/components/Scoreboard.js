@@ -13,8 +13,8 @@ class Scoreboard extends React.Component {
     render() {
         let socketio = this.props.socket;
 
-        const own_score = this.state.own_score; 
-        const opp_score = this.state.opp_score;
+       // const own_score = this.state.own_score; 
+       // const opp_score = this.state.opp_score;
 
         // This calculates your own score
         socketio.on("hit_to_client", (data) => {
